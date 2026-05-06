@@ -1,7 +1,7 @@
 .{
-    .name = .steamworks_sdk_zig,
+    .name = .steamworks_sdk,
     .version = "0.0.0",
-    .fingerprint = 0x8a75ca9859259c0f,
+    .fingerprint = 0x1cdd436ae2ccd36f,
     .minimum_zig_version = "0.16.0",
     .dependencies = .{
         .steamworks_sdk = .{
