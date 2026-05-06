@@ -1,0 +1,17 @@
+.{
+    .name = .steamworks_sdk_zig,
+    .version = "0.0.0",
+    .fingerprint = 0x8a75ca9859259c0f,
+    .minimum_zig_version = "0.16.0",
+    .dependencies = .{
+        .steamworks_sdk = .{
+            .url = "git+https://github.com/rlabrecque/SteamworksSDK/#be6107f4b75bf996531415c53a6488a33a2a1be3",
+            .hash = "N-V-__8AAAClvQLNFGR54A35VGr9Ac767gDs5Qu5B161wZsz",
+        },
+    },
+    .paths = .{
+        "build.zig",
+        "build.zig.zon",
+        "src",
+    },
+}
