@@ -2,14 +2,20 @@ const std = @import("std");
 
 pub const ErrMsg = [1024]u8;
 
-pub const ESteamAPIInitResult = enum(c_int) {
-    pub const ok = 0;
+pub const InitResult = enum(c_int) {
+    ok = 0,
     /// Some other failure
-    pub const failed_generic = 1;
+    failed_generic = 1,
     /// We cannot connect to Steam, steam probably isn't running
-    pub const no_steam_client = 2;
+    no_steam_client = 2,
     /// Steam client appears to be out of date
-    pub const version_mismatch = 3;
+    version_mismatch = 3,
+
+    pub const Error = error{
+        FailedGeneric,
+        NoSteamClient,
+        VersionMismatch,
+    };
 };
 
 /// See "Initializing the Steamworks SDK" above for how to choose an init method.
@@ -26,15 +32,20 @@ pub const ESteamAPIInitResult = enum(c_int) {
 ///   if ( SteamAPI_Init(&errMsg) != k_ESteamAPIInitResult_OK )
 ///       FatalError( "Failed to init Steam.  %s", errMsg );
 ///
-extern fn SteamAPI_InitEx(out_err_msg: ?*ErrMsg) ESteamAPIInitResult;
+extern fn SteamAPI_InitEx(out_err_msg: ?*ErrMsg) InitResult;
 pub const initEx = SteamAPI_InitEx;
 
 /// See "Initializing the Steamworks SDK" above for how to choose an init method.
 /// Returns true on success
 /// See also:
 /// * `initEx`
-pub fn init() bool {
-    return initEx(null) == .ok;
+pub fn init() InitResult.Error!void {
+    switch (initEx(null)) {
+        .ok => {},
+        .failed_generic => return error.FailedGeneric,
+        .no_steam_client => return error.NoSteamClient,
+        .version_mismatch => return error.VersionMismatch,
+    }
 }
 
 extern fn SteamAPI_Shutdown() void;
