@@ -42,3 +42,6 @@ pub const shutdown = SteamAPI_Shutdown;
 
 extern fn SteamAPI_RestartAppIfNecessary(unOwnAppID: u32) bool;
 pub const restartAppIfNecessary = SteamAPI_RestartAppIfNecessary;
+
+extern fn SteamAPI_ReleaseCurrentThreadMemory() void;
+pub const releaseCurrentThreadMemory = SteamAPI_ReleaseCurrentThreadMemory;

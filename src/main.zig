@@ -5,4 +5,5 @@ const steam = @import("steamworks_sdk");
 
 pub fn main(init: std.process.Init) !void {
     _ = init;
+    try steam.init();
 }
