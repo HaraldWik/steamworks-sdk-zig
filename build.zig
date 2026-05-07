@@ -17,6 +17,10 @@ pub fn build(b: *std.Build) void {
     const run = b.addRunArtifact(generator);
     run.addFileArg(steamworks_sdk.path("public/steam/steam_api.json"));
     const output = run.addOutputFileArg("steam_api.zig");
+    run.color = switch (std.Io.Terminal.Mode.detect(b.graph.io, .stderr(), false, false) catch .no_color) {
+        .no_color => .disable,
+        else => .enable,
+    };
 
     const mod = b.addModule("steamworks_sdk", .{
         .root_source_file = output,

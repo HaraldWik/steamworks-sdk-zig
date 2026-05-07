@@ -1,6 +1,89 @@
 const std = @import("std");
+const builtin = @import("builtin");
+
+pub const Id = u64;
+pub const AppId = u32;
+
+pub const ApiCall = c_ulonglong;
+pub const AccountID = c_uint;
+pub const PartyBeaconID = c_ulonglong;
+pub const HAuthTicket = c_uint;
+
+pub const PFNPreMinidumpCallback = ?*const fn (?*anyopaque) callconv(.c) void;
+
+pub const Pipe = c_int;
 
 pub const ErrMsg = [1024]u8;
+
+pub const FriendsGroupID = c_short;
+
+pub const HServerListRequest = ?*anyopaque;
+pub const HServerQuery = c_int;
+
+pub const UGCHandle = c_ulonglong;
+pub const PublishedFileUpdateHandle = c_ulonglong;
+pub const PublishedFileId = c_ulonglong;
+pub const UGCFileWriteStreamHandle = c_ulonglong;
+
+pub const Leaderboard = c_ulonglong;
+pub const LeaderboardEntries = c_ulonglong;
+
+pub const SNetSocket = c_uint;
+pub const SNetListenSocket = c_uint;
+
+pub const ScreenshotHandle = c_uint;
+pub const HTTPRequestHandle = c_uint;
+pub const HTTPCookieContainerHandle = c_uint;
+
+pub const InputHandle = c_ulonglong;
+pub const InputActionSetHandle = c_ulonglong;
+pub const InputDigitalActionHandle = c_ulonglong;
+pub const InputAnalogActionHandle = c_ulonglong;
+
+// pub const InputActionEventCallbackPointer = ?*const fn (*InputActionEvent) callconv(.c) void;
+
+pub const ControllerHandle = c_ulonglong;
+pub const ControllerActionSetHandle = c_ulonglong;
+pub const ControllerDigitalActionHandle = c_ulonglong;
+pub const ControllerAnalogActionHandle = c_ulonglong;
+
+pub const UGCQueryHandle = c_ulonglong;
+pub const UGCUpdateHandle = c_ulonglong;
+
+pub const HHTMLBrowser = c_uint;
+
+pub const ItemInstanceID = c_ulonglong;
+pub const ItemDef = c_int;
+pub const InventoryResult = c_int;
+pub const InventoryUpdateHandle = c_ulonglong;
+
+pub const TimelineEventHandle = c_ulonglong;
+
+pub const RemotePlaySessionID = c_uint;
+pub const RemotePlayCursorID = c_uint;
+
+// pub const NetConnectionStatusChanged = ?*const fn (*NetConnectionStatusChangedCallback) callconv(.c) void;
+
+// pub const NetAuthenticationStatusChanged = ?*const fn (*NetAuthenticationStatus) callconv(.c) void;
+
+// pub const RelayNetworkStatusChanged = ?*const fn (*RelayNetworkStatus) callconv(.c) void;
+
+pub const NetworkingMessagesSessionRequest = ?*const fn (*NetworkingMessagesSessionRequest) callconv(.c) void;
+
+pub const NetworkingMessagesSessionFailed = ?*const fn (*NetworkingMessagesSessionFailed) callconv(.c) void;
+
+pub const NetworkingFakeIPResult = ?*const fn (*NetworkingFakeIPResult) callconv(.c) void;
+
+pub const NetConnection = c_uint;
+pub const ListenSocket = c_uint;
+pub const NetPollGroup = c_uint;
+
+pub const NetworkingErrMsg = [1024]u8;
+
+pub const NetworkingPOPID = c_uint;
+pub const NetworkingMicroseconds = c_longlong;
+
+// pub const NetworkingSocketsDebugOutput = ?*const fn (NetworkingSocketsDebugOutputType, [*:0]const u8) callconv(.c) void;
 
 pub const InitResult = enum(c_int) {
     ok = 0,
@@ -18,34 +101,26 @@ pub const InitResult = enum(c_int) {
     };
 };
 
-/// See "Initializing the Steamworks SDK" above for how to choose an init method.
-/// On success k_ESteamAPIInitResult_OK is returned. Otherwise, returns a value that can be used
-/// to create a localized error message for the user. If pOutErrMsg is non-NULL,
-/// it will receive an example error message, in English, that explains the reason for the failure.
-///
-/// Example usage:
-/// ```zig
-/// var err_msg: ErrMsg = undefined;
-///
-/// ```
-///   SteamErrMsg errMsg;
-///   if ( SteamAPI_Init(&errMsg) != k_ESteamAPIInitResult_OK )
-///       FatalError( "Failed to init Steam.  %s", errMsg );
-///
-extern fn SteamAPI_InitEx(out_err_msg: ?*ErrMsg) InitResult;
-pub const initEx = SteamAPI_InitEx;
+extern fn SteamAPI_InitFlat(out_err_msg: ?*ErrMsg) InitResult;
 
-/// See "Initializing the Steamworks SDK" above for how to choose an init method.
-/// Returns true on success
 /// See also:
-/// * `initEx`
+/// * `shutdown`
 pub fn init() InitResult.Error!void {
-    switch (initEx(null)) {
+    const result = switch (builtin.mode) {
+        .Debug, .ReleaseSafe => result: {
+            var err_msg: ErrMsg = undefined;
+            const result = SteamAPI_InitFlat(&err_msg);
+            if (result != .ok) std.log.err("{s}", .{err_msg});
+            break :result result;
+        },
+        else => SteamAPI_InitFlat(null),
+    };
+    return switch (result) {
         .ok => {},
-        .failed_generic => return error.FailedGeneric,
-        .no_steam_client => return error.NoSteamClient,
-        .version_mismatch => return error.VersionMismatch,
-    }
+        .failed_generic => error.FailedGeneric,
+        .no_steam_client => error.NoSteamClient,
+        .version_mismatch => error.VersionMismatch,
+    };
 }
 
 extern fn SteamAPI_Shutdown() void;
