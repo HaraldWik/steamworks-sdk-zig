@@ -83,7 +83,187 @@ pub const NetworkingErrMsg = [1024]u8;
 pub const NetworkingPOPID = c_uint;
 pub const NetworkingMicroseconds = c_longlong;
 
+pub const NetworkPingLocation = extern struct {
+    data: [512]u8,
+};
+
+pub const NetworkingIdentity = extern struct {
+    e_type: c_int,
+    data: union {
+        m_steamID: Id,
+        m_ip: [16]u8,
+    },
+};
+
+pub const NetworkingIPAddr = extern struct {
+    data: [16]u8,
+};
+
+pub const RelayNetworkStatusChanged = extern struct {
+    data: [256]u8,
+};
+
+pub const NetConnectionStatusChanged = extern struct {
+    data: [256]u8,
+};
+
+pub const NetAuthenticationStatusChanged = extern struct {
+    data: [256]u8,
+};
+
+pub const NetworkingSocketsDebugOutput = extern struct {
+    data: [256]u8,
+};
+
+pub const NetworkingMessage = extern struct {
+    data: [128]u8,
+};
+
+pub const NetworkingConnectionSignaling = extern struct {
+    data: [256]u8,
+};
+
+pub const NetworkingSignalingRecvContext = extern struct {
+    data: [256]u8,
+};
+
+pub const DatagramGameCoordinatorServerLogin = extern struct {
+    data: [128]u8,
+};
+
+pub const DatagramHostedAddress = extern struct {
+    data: [64]u8,
+};
+
+pub const DatagramRelayAuthTicket = extern struct {
+    data: [128]u8,
+};
+
+pub const NetConnectionInfo = extern struct {
+    data: [256]u8,
+};
+
+pub const P2PSessionState = extern struct {
+    data: [64]u8,
+};
+
+pub const RTime32 = u32;
+pub const DepotId = u32;
+
+pub const ParamStringArray = extern struct {
+    data: [256]u8,
+};
+
+pub const UGCDetails = extern struct {
+    data: [512]u8,
+};
+
+pub const LeaderboardEntry = extern struct {
+    data: [128]u8,
+};
+
+pub const MatchMakingKeyValuePair = extern struct {
+    data: [128]u8,
+};
+
+pub const FriendGameInfo = extern struct {
+    data: [64]u8,
+};
+
+pub const Inventory = extern struct {
+    data: [256]u8,
+};
+
+pub const Screenshots = extern struct {
+    data: [128]u8,
+};
+
+pub const gameserveritem = extern struct {
+    data: [512]u8,
+};
+
+pub const PartyBeaconLocation = extern struct {
+    data: [128]u8,
+};
+
+pub const RelayNetworkStatus = extern struct {
+    data: [512]u8,
+};
+
+pub const IPAddress = extern struct {
+    data: [16]u8,
+};
+
+pub const NetAuthenticationStatus = extern struct {
+    data: [256]u8,
+};
+
+pub const NetConnectionRealTimeStatus = extern struct {
+    data: [256]u8,
+};
+
+pub const InputMotionData = extern struct {
+    data: [64]u8,
+};
+
+pub const NetConnectionRealTimeLaneStatus = extern struct {
+    data: [256]u8,
+};
+
+pub const RemotePlayInput = extern struct {
+    data: [128]u8,
+};
+
+pub const ItemDetails = extern struct {
+    data: [256]u8,
+};
+
+pub const ScePadTriggerEffectParam = extern struct {
+    data: [64]u8,
+};
+
+pub const InputAnalogActionData = extern struct {
+    x: f32,
+    y: f32,
+    active: bool,
+};
+
+pub const InputDigitalActionData = extern struct {
+    active: bool,
+    state: bool,
+};
+
+pub const InputActionEvent = extern struct {
+    data: [64]u8,
+};
+
+pub const InputActionEventCallbackPointer = ?*const fn (*InputActionEvent) callconv(.c) void;
+
+pub const APIWarningMessageHook = ?*const fn (c_int, [*:0]const u8) callconv(.c) void;
+
+pub const Input = u64;
+
+pub const CGameID = u64;
 // pub const NetworkingSocketsDebugOutput = ?*const fn (NetworkingSocketsDebugOutputType, [*:0]const u8) callconv(.c) void;
+
+pub const HTMLKeyModifiers = packed struct(u8) {
+    shift: bool = false,
+    ctrl: bool = false,
+    alt: bool = false,
+    meta: bool = false,
+
+    pub const none: HTMLKeyModifiers = .{};
+};
+
+pub const HTMLMouseButton = enum(u8) {
+    left = 0,
+    middle = 1,
+    right = 2,
+
+    // optional extended buttons
+    back = 3,
+    forward = 4,
+};
 
 pub const InitResult = enum(c_int) {
     ok = 0,

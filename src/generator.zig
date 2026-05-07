@@ -38,6 +38,8 @@ pub const type_fixes: std.StaticStringMap([]const u8) = .initComptime(&.{
     .{ "ID", "Id" },
 
     .{ "APICall", "ApiCall" },
+
+    .{ "intptr", "isize" },
 });
 
 pub const Json = struct {
@@ -184,7 +186,7 @@ pub fn main(init: std.process.Init) !void {
     var output_file = try std.Io.Dir.createFileAbsolute(io, output_path, .{});
     defer output_file.close(io);
     try output_file.writeStreamingAll(io, @embedFile("core.zig"));
-    // try output_file.writeStreamingAll(io, output_writer.writer.buffered());
+    try output_file.writeStreamingAll(io, output_writer.writer.buffered());
     // var output_file_writer_buffer: [4096]u8 = undefined;
     // var output_file_writer = output_file.writer(io, &output_file_writer_buffer);
     // try output_file_writer.interface.writeAll(@embedFile("core.zig"));
@@ -223,38 +225,56 @@ pub fn emit(w: *std.Io.Writer, json: Json) std.Io.Writer.Error!void {
 }
 
 pub fn emitType(w: *std.Io.Writer, raw: []const u8) std.Io.Writer.Error!void {
-    var s = std.mem.trim(u8, raw, " ");
+    var s = std.mem.trim(u8, raw, " \t\r\n");
 
     var is_const = false;
     if (std.mem.startsWith(u8, s, "const ")) {
         is_const = true;
-        s = s[6..];
+        s = std.mem.trimStart(u8, s["const ".len..], " ");
     }
 
     var ptr_depth: usize = 0;
-
     for (s) |c| switch (c) {
         '*', '&' => ptr_depth += 1,
         else => {},
     };
 
-    const name: []const u8 = name: {
-        var start: usize = for (s, 0..) |c, i| {
-            if (std.ascii.isAlphanumeric(c) or c == '_') break i;
-        } else unreachable;
+    var start: usize = 0;
 
-        var end: usize = s.len;
+    if (std.mem.lastIndexOf(u8, s, "::")) |i| {
+        start = i + 2;
+    } else {
+        for (s, 0..) |c, i| {
+            if (std.ascii.isAlphanumeric(c) or c == '_') {
+                start = i;
+                break;
+            }
+        }
+    }
 
-        for (s[start..], 0..) |c, i| if (!std.ascii.isAlphanumeric(c) or c == '_' or c == ' ') {
-            end = start + i;
-            break;
-        };
+    var end: usize = start;
+    for (s[start..], 0..) |c, i| {
+        const valid =
+            std.ascii.isAlphanumeric(c) or
+            c == '_' or
+            c == ' ';
 
-        if (std.mem.find(u8, s[start..end], "Steam")) |index| start += index + 5;
-        if (std.mem.endsWith(u8, s[start..end], "_t")) end -= 2;
+        if (valid) {
+            end = start + i + 1;
+        }
+        if (c == '*' or c == '&') break;
+    }
 
-        break :name s[start..end];
-    };
+    var name = std.mem.trimEnd(u8, s[start..end], " ");
+
+    if (std.mem.lastIndexOf(u8, name, "::")) |i| name = name[i + 2 ..];
+    if (std.mem.find(u8, name, "Steam")) |i| name = name[i + "Steam".len ..];
+    if (std.mem.endsWith(u8, name, "_t")) name = name[0 .. name.len - 2];
+
+    if (name.len >= 2 and
+        name[0] == 'E' and
+        std.ascii.isUpper(name[1]))
+        name = name[1..];
 
     for (0..ptr_depth) |_| try w.writeAll("[*c]");
     if (is_const and ptr_depth > 0) try w.writeAll("const ");
